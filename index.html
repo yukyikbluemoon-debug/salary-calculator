@@ -1,1 +1,1007 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ระบบคำนวณค่าแรง รปภ. V.5</title>
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #3949ab;
+            --success: #2e7d32;
+            --warning: #f9a825;
+            --danger: #c62828;
+            --holiday: #7b1fa2;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 8px;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        /* Configuration */
+        .config-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .config-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #e65100;
+            margin-bottom: 10px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+
+        .field input, .field select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .info-box strong {
+            color: #1565c0;
+        }
+
+        /* Calendar */
+        .calendar-wrapper {
+            overflow-x: auto;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            padding: 8px;
+            min-width: 400px;
+        }
+
+        .period-label {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, var(--secondary), #5c6bc0);
+            color: white;
+            padding: 8px 2px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .day-cell {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 6px 2px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 75px;
+            position: relative;
+        }
+
+        .day-cell:active { 
+            transform: scale(0.95); 
+        }
+        
+        .day-cell.seven-border { 
+            border-bottom: 4px solid #ff5722; 
+            margin-bottom: 4px;
+        }
+
+        .day-number { 
+            font-weight: bold; 
+            font-size: 16px; 
+            color: #333;
+        }
+        
+        .day-date { 
+            font-size: 10px; 
+            color: #888; 
+            margin: 2px 0; 
+        }
+        
+        .day-status { 
+            font-size: 24px; 
+            font-weight: bold; 
+            margin: 3px 0; 
+        }
+        
+        .day-label { 
+            font-size: 10px; 
+            color: #555;
+            margin-top: 2px;
+        }
+        
+        .day-pay { 
+            font-size: 11px; 
+            font-weight: bold; 
+            margin-top: 3px;
+        }
+
+        /* Status Colors */
+        .status-W { 
+            background: linear-gradient(135deg, #c8e6c9, #a5d6a7); 
+            border-color: #4CAF50; 
+        }
+        .status-W .day-status { color: var(--success); }
+        .status-W .day-pay { color: var(--success); }
+        
+        .status-P { 
+            background: linear-gradient(135deg, #fff9c4, #fff59d); 
+            border-color: #ffeb3b; 
+        }
+        .status-P .day-status { color: var(--warning); }
+        .status-P .day-pay { color: var(--warning); }
+        
+        .status-L { 
+            background: linear-gradient(135deg, #ffcdd2, #ef9a9a); 
+            border-color: #f44336; 
+        }
+        .status-L .day-status { color: var(--danger); }
+        .status-L .day-pay { color: var(--danger); }
+        
+        .status-H { 
+            background: linear-gradient(135deg, #e0e0e0, #bdbdbd); 
+            border-color: #9e9e9e; 
+        }
+        .status-H .day-status { color: #616161; }
+        .status-H .day-pay { color: #616161; }
+
+        .status-PH { 
+            background: linear-gradient(135deg, #e1bee7, #ce93d8); 
+            border-color: var(--holiday); 
+        }
+        .status-PH .day-status { color: var(--holiday); }
+        .status-PH .day-pay { color: var(--holiday); }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .legend-item {
+            display: flex; 
+            align-items: center; 
+            gap: 5px;
+            background: #f5f5f5; 
+            padding: 5px 10px; 
+            border-radius: 15px;
+        }
+        
+        .dot { 
+            width: 24px; 
+            height: 24px; 
+            border-radius: 50%; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: white;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex; 
+            gap: 8px; 
+            justify-content: center; 
+            margin: 15px 0; 
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px;
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 600;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2); 
+            transition: all 0.2s;
+        }
+        
+        .btn:active { 
+            transform: translateY(2px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .btn-calc { 
+            background: linear-gradient(135deg, #4CAF50, #66bb6a); 
+            color: white; 
+        }
+        
+        .btn-print { 
+            background: linear-gradient(135deg, #2196F3, #42a5f5); 
+            color: white; 
+        }
+        
+        .btn-reset { 
+            background: linear-gradient(135deg, #f44336, #ef5350); 
+            color: white; 
+        }
+
+        /* Summary */
+        .summary-box {
+            background: linear-gradient(135deg, #f5f5f5, #eeeeee);
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 15px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .summary-title {
+            color: var(--primary); 
+            font-size: 18px; 
+            margin-bottom: 12px;
+            border-bottom: 3px solid var(--primary); 
+            padding-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .summary-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 10px;
+        }
+        
+        .summary-item {
+            background: white; 
+            padding: 10px; 
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .summary-item label { 
+            display: block; 
+            font-size: 11px; 
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .summary-item .val { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: var(--primary); 
+        }
+
+        .net-pay-box {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center;
+            margin-top: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .net-pay-box .label {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .net-pay-box .amount { 
+            font-size: 32px; 
+            font-weight: bold; 
+        }
+
+        .rate-info {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        .rate-info h4 {
+            color: #e65100;
+            margin-bottom: 8px;
+        }
+
+        .rate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+        }
+
+        .rate-item {
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .rate-item .label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .rate-item .value {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Quarter */
+        .quarter-box {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 15px;
+        }
+        
+        .quarter-title {
+            color: #1565c0;
+            font-size: 16px; 
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .quarter-grid {
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px;
+        }
+        
+        .q-card {
+            background: white; 
+            padding: 10px; 
+            border-radius: 8px; 
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .q-card label { 
+            font-size: 11px; 
+            color: #666; 
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .q-card .val { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #1565c0; 
+        }
+
+        .q-card .days {
+            font-size: 10px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .config-grid { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .summary-grid { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .quarter-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+            
+            .day-cell { 
+                min-height: 65px; 
+            }
+            
+            .day-number { 
+                font-size: 14px; 
+            }
+            
+            .day-status { 
+                font-size: 20px; 
+            }
+
+            .net-pay-box .amount {
+                font-size: 24px;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .rate-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .config-section, .btn-group, .legend, .quarter-box, .info-box { 
+                display: none; 
+            }
+            
+            .day-cell:hover, .day-cell:active {
+                transform: none;
+            }
+            
+            .container { 
+                box-shadow: none; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ ระบบคำนวณค่าแรง รปภ. <span class="version-badge">V.5</span></h1>
+        <div class="subtitle">คลิกที่วันเพื่อเลือกสถานะ | รองรับงวดครึ่งเดือนและเต็มเดือน</div>
+
+        <div class="info-box">
+            <strong>💡 วิธีใช้:</strong> คลิกที่วันเพื่อสลับสถานะ: ว่าง → ทำงาน(W) → ป่วย(P) → ลา(L) → หยุด(H) → นักขัตฤกษ์(PH) → ว่าง
+        </div>
+
+        <!-- Rate Info -->
+        <div class="rate-info">
+            <h4>📊 อัตราค่าจ้าง</h4>
+            <div class="rate-grid">
+                <div class="rate-item">
+                    <div class="label">ทำงานปกติ (12 ชม.)</div>
+                    <div class="value">650 บาท</div>
+                </div>
+                <div class="rate-item">
+                    <div class="label">ลาป่วย (8 ชม.)</div>
+                    <div class="value">400 บาท</div>
+                </div>
+                <div class="rate-item">
+                    <div class="label">วันนักขัตฤกษ์ (12 ชม.)</div>
+                    <div class="value">1,300 บาท</div>
+                </div>
+                <div class="rate-item">
+                    <div class="label">ลา/หยุด</div>
+                    <div class="value">0 บาท</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Config -->
+        <div class="config-section">
+            <div class="config-title">⚙️ ตั้งค่าระบบ</div>
+            <div class="config-grid">
+                <div class="field">
+                    <label>📅 เลือกรอบเงินเดือน</label>
+                    <select id="periodType" onchange="updateCalendar()">
+                        <option value="1-15">งวดที่ 1: 24 เดือนก่อน - 7 เดือนนี้ (ครึ่งเดือนแรก)</option>
+                        <option value="16-end">งวดที่ 2: 8-23 เดือนนี้ (ครึ่งเดือนหลัง)</option>
+                        <option value="24-23" selected>งวดแบบ 24-23 (เต็มเดือน)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>📆 เดือน/ปี ที่คำนวณ</label>
+                    <input type="month" id="targetMonth" value="2026-04" onchange="updateCalendar()">
+                </div>
+                <div class="field">
+                    <label>💰 ค่าแรงพื้นฐาน 8 ชม. (บาท)</label>
+                    <input type="number" id="baseWage" value="400" onchange="calculate()">
+                </div>
+                <div class="field">
+                    <label>⏰ ชม.ทำงานปกติ/วัน</label>
+                    <input type="number" id="dailyHours" value="12" onchange="calculate()">
+                </div>
+                <div class="field">
+                    <label>🎁 โบนัส/วันทำงาน (บาท)</label>
+                    <input type="number" id="dailyBonus" value="32" onchange="calculate()">
+                </div>
+                <div class="field">
+                    <label>👔 ค่าตำแหน่ง (บาท/เดือน)</label>
+                    <input type="number" id="positionPay" value="600" onchange="calculate()">
+                </div>
+                <div class="field">
+                    <label>🔥 วันทำงานติด (ได้เงินเพิ่ม 1 วัน)</label>
+                    <input type="number" id="consecutiveTarget" value="7" onchange="calculate()">
+                </div>
+                <div class="field">
+                    <label>💵 ฐานเงินเดือน (สำหรับประกันสังคม)</label>
+                    <input type="number" id="salaryBase" value="12000" onchange="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dot" style="background:#4CAF50">W</div>
+                <span>ทำงาน (650฿)</span>
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:#fdd835; color:#333">P</div>
+                <span>ป่วย (400฿)</span>
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:#f44336">L</div>
+                <span>ลา (0฿)</span>
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:#9e9e9e">H</div>
+                <span>หยุด (0฿)</span>
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:#7b1fa2">PH</div>
+                <span>นักขัตฤกษ์ (1,300฿)</span>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="calendar-wrapper">
+            <div class="calendar" id="calendar"></div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-calc" onclick="calculate()">🔄 คำนวณใหม่</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ พิมพ์สลิป</button>
+            <button class="btn btn-reset" onclick="resetData()">🗑️ ล้างข้อมูล</button>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-box">
+            <div class="summary-title">📊 สรุปรายได้-รายจ่าย</div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <label>📅 วันทำงานปกติ (W)</label>
+                    <div class="val" id="sumWorkDays">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>💵 ค่าแรงปกติ (650฿/วัน)</label>
+                    <div class="val" id="sumBasePay">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>🎉 วันนักขัตฤกษ์ (PH)</label>
+                    <div class="val" id="sumHolidayDays">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>💰 ค่าวันหยุดนักขัตฤกษ์ (1,300฿/วัน)</label>
+                    <div class="val" id="sumHolidayPay">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>🤒 วันป่วย (P)</label>
+                    <div class="val" id="sumSickDays">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>💊 ค่าป่วย (400฿/วัน)</label>
+                    <div class="val" id="sumSickPay">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>🎁 โบนัสรายวัน</label>
+                    <div class="val" id="sumBonus">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>🔥 ทำงาน 7 วันติด</label>
+                    <div class="val" id="sumConsecutive">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>👔 ค่าตำแหน่ง</label>
+                    <div class="val" id="sumPosition">0</div>
+                </div>
+                <div class="summary-item">
+                    <label>🏥 ประกันสังคม (5%)</label>
+                    <div class="val" id="sumSocial" style="color:var(--danger)">-0</div>
+                </div>
+                <div class="summary-item">
+                    <label>🛡️ ประกันชีวิต</label>
+                    <div class="val" id="sumLife" style="color:var(--danger)">-34</div>
+                </div>
+                <div class="summary-item">
+                    <label>❌ วันลา/หยุด (L/H)</label>
+                    <div class="val" id="sumLeave">0</div>
+                </div>
+            </div>
+
+            <div class="net-pay-box">
+                <div class="label">💰 เงินเดือนสุทธิ (Net Pay)</div>
+                <div class="amount" id="netPay">0.00 บาท</div>
+            </div>
+        </div>
+
+        <!-- Quarter -->
+        <div class="quarter-box">
+            <div class="quarter-title">📅 โบนัสรายวัน (สะสมรายไตรมาส)</div>
+            <div class="quarter-grid" id="quarterGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        let currentDays = [];
+        let statusData = [];
+
+        // Rates
+        const RATE_WORK = 650;      // 12 hrs normal work
+        const RATE_SICK = 400;      // 8 hrs sick leave
+        const RATE_HOLIDAY = 1300;  // 12 hrs public holiday
+        const RATE_LEAVE = 0;       // Leave or off
+
+        function getDaysForPeriod(type, year, month) {
+            const days = [];
+            
+            if (type === '1-15') {
+                // First half period: 24 prev month - 7 current month
+                const prevMonth = month === 1 ? 11 : month - 2;
+                const prevYear = month === 1 ? year - 1 : year;
+                const daysInPrev = new Date(prevYear, prevMonth + 1, 0).getDate();
+                
+                // Days 24-end of previous month
+                for (let i = 24; i <= daysInPrev; i++) {
+                    days.push({ day: i, month: prevMonth, year: prevYear });
+                }
+                
+                // Days 1-7 of current month
+                for (let i = 1; i <= 7; i++) {
+                    days.push({ day: i, month: month - 1, year: year });
+                }
+                
+            } else if (type === '16-end') {
+                // Second half period: 8-23 current month
+                for (let i = 8; i <= 23; i++) {
+                    days.push({ day: i, month: month - 1, year: year });
+                }
+                
+            } else if (type === '24-23') {
+                // Full month period: 24 prev month - 23 current month
+                const prevMonth = month === 1 ? 11 : month - 2;
+                const prevYear = month === 1 ? year - 1 : year;
+                const daysInPrev = new Date(prevYear, prevMonth + 1, 0).getDate();
+                
+                // Days 24-end of previous month
+                for (let i = 24; i <= daysInPrev; i++) {
+                    days.push({ day: i, month: prevMonth, year: prevYear });
+                }
+                
+                // Days 1-23 of current month
+                for (let i = 1; i <= 23; i++) {
+                    days.push({ day: i, month: month - 1, year: year });
+                }
+            }
+            
+            return days;
+        }
+
+        function createCalendar() {
+            const cal = document.getElementById('calendar');
+            cal.innerHTML = '';
+            
+            const type = document.getElementById('periodType').value;
+            const [y, m] = document.getElementById('targetMonth').value.split('-').map(Number);
+            
+            currentDays = getDaysForPeriod(type, y, m);
+            statusData = new Array(currentDays.length).fill('');
+
+            // Period Label
+            const label = document.createElement('div');
+            label.className = 'period-label';
+            let txt = '';
+            
+            if (type === '1-15') {
+                // First half: 24 prev - 7 current
+                const prevMonth = m === 1 ? 12 : m - 1;
+                const prevYear = m === 1 ? y - 1 : y;
+                txt = `24 ${monthNames[prevMonth-1]} ${prevYear+543} - 7 ${monthNames[m-1]} ${y+543} (ครึ่งเดือนแรก)`;
+            } else if (type === '16-end') {
+                // Second half: 8-23 current
+                txt = `8 ${monthNames[m-1]} ${y+543} - 23 ${monthNames[m-1]} ${y+543} (ครึ่งเดือนหลัง)`;
+            } else {
+                // Full month: 24 prev - 23 current
+                const prevMonth = m === 1 ? 12 : m - 1;
+                const prevYear = m === 1 ? y - 1 : y;
+                txt = `24 ${monthNames[prevMonth-1]} ${prevYear+543} - 23 ${monthNames[m-1]} ${y+543} (เต็มเดือน)`;
+            }
+            
+            label.textContent = `📅 งวด: ${txt}`;
+            cal.appendChild(label);
+
+            // Week day headers
+            ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'].forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'day-header';
+                div.textContent = d;
+                cal.appendChild(div);
+            });
+
+            // Days
+            currentDays.forEach((d, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                cell.id = `d_${i}`;
+                cell.onclick = () => toggleStatus(i);
+                
+                // Add thick border every 7 days
+                if ((i + 1) % 7 === 0) {
+                    cell.classList.add('seven-border');
+                }
+                
+                cell.innerHTML = `
+                    <div class="day-number">${d.day}</div>
+                    <div class="day-date">${d.day}/${d.month+1}</div>
+                    <div class="day-status" id="s_${i}"></div>
+                    <div class="day-label" id="l_${i}">คลิกเลือก</div>
+                    <div class="day-pay" id="p_${i}"></div>
+                `;
+                cal.appendChild(cell);
+            });
+            
+            calculate();
+        }
+
+        function toggleStatus(i) {
+            // Cycle through: '' -> W -> P -> L -> H -> PH -> ''
+            const states = ['', 'W', 'P', 'L', 'H', 'PH'];
+            const cur = statusData[i];
+            const next = states[(states.indexOf(cur) + 1) % states.length];
+            statusData[i] = next;
+            updateCell(i);
+            calculate();
+        }
+
+        function updateCell(i) {
+            const cell = document.getElementById(`d_${i}`);
+            const st = document.getElementById(`s_${i}`);
+            const lb = document.getElementById(`l_${i}`);
+            const py = document.getElementById(`p_${i}`);
+            const status = statusData[i];
+            
+            // Reset classes
+            cell.className = 'day-cell';
+            if ((i + 1) % 7 === 0) {
+                cell.classList.add('seven-border');
+            }
+            
+            if (!status) {
+                st.textContent = ''; 
+                lb.textContent = 'คลิกเลือก'; 
+                py.textContent = '';
+                return;
+            }
+            
+            cell.classList.add(`status-${status}`);
+            st.textContent = status;
+            
+            const labels = { 
+                W: 'ทำงาน', 
+                P: 'ป่วย', 
+                L: 'ลา', 
+                H: 'หยุด',
+                PH: 'นักขัตฤกษ์'
+            };
+            lb.textContent = labels[status];
+            
+            // Calculate pay for this day
+            let pay = 0;
+            if (status === 'W') pay = RATE_WORK;
+            else if (status === 'P') pay = RATE_SICK;
+            else if (status === 'PH') pay = RATE_HOLIDAY;
+            else pay = RATE_LEAVE;
+            
+            py.textContent = pay > 0 ? pay.toLocaleString() + '฿' : '0';
+        }
+
+        function calculate() {
+            const dailyBonus = parseFloat(document.getElementById('dailyBonus').value) || 32;
+            const positionPayMonthly = parseFloat(document.getElementById('positionPay').value) || 600;
+            const consecutiveTarget = parseInt(document.getElementById('consecutiveTarget').value) || 7;
+            const salaryBase = parseFloat(document.getElementById('salaryBase').value) || 12000;
+            const periodType = document.getElementById('periodType').value;
+            
+            let wDays = 0, pDays = 0, phDays = 0, lDays = 0, hDays = 0;
+            let basePay = 0, holidayPay = 0, sickPay = 0, consBonus = 0;
+            let consCount = 0;
+            
+            // Calculate for each day
+            for (let i = 0; i < currentDays.length; i++) {
+                const st = statusData[i];
+                updateCell(i);
+                
+                if (st === 'W') {
+                    wDays++;
+                    basePay += RATE_WORK;
+                    consCount++;
+                    if (consCount >= consecutiveTarget) {
+                        consBonus++;
+                        consCount = 0;
+                    }
+                } else if (st === 'P') {
+                    pDays++;
+                    sickPay += RATE_SICK;
+                    consCount = 0;
+                } else if (st === 'PH') {
+                    phDays++;
+                    holidayPay += RATE_HOLIDAY;
+                    consCount++;
+                    if (consCount >= consecutiveTarget) {
+                        consBonus++;
+                        consCount = 0;
+                    }
+                } else if (st === 'L') {
+                    lDays++;
+                    consCount = 0;
+                } else if (st === 'H') {
+                    hDays++;
+                    consCount = 0;
+                }
+            }
+            
+            // Calculate bonus
+            const bonusPay = wDays * dailyBonus;
+            const consPay = consBonus * RATE_WORK; // Get 1 day pay for every 7 consecutive days
+            
+            // Calculate position allowance (proportional for half month)
+            let positionPay = positionPayMonthly;
+            if (periodType === '1-15' || periodType === '16-end') {
+                positionPay = positionPayMonthly / 2;
+            }
+            
+            // Total income
+            const totalIncome = basePay + holidayPay + sickPay + bonusPay + consPay + positionPay;
+            
+            // Calculate social security (5% of base salary, max 750)
+            const socialSec = Math.min(Math.round(salaryBase * 0.05), 750);
+            
+            // Life insurance
+            const lifeIns = 34;
+            
+            // Total deductions
+            const totalDeductions = socialSec + lifeIns;
+            
+            // Net pay
+            const netPay = totalIncome - totalDeductions;
+            
+            // Update UI
+            document.getElementById('sumWorkDays').textContent = wDays;
+            document.getElementById('sumBasePay').textContent = basePay.toLocaleString() + ' ฿';
+            document.getElementById('sumHolidayDays').textContent = phDays;
+            document.getElementById('sumHolidayPay').textContent = holidayPay.toLocaleString() + ' ฿';
+            document.getElementById('sumSickDays').textContent = pDays;
+            document.getElementById('sumSickPay').textContent = sickPay.toLocaleString() + ' ฿';
+            document.getElementById('sumBonus').textContent = bonusPay.toLocaleString() + ' ฿';
+            document.getElementById('sumConsecutive').textContent = `${consBonus} ครั้ง (+${consPay.toLocaleString()} ฿)`;
+            document.getElementById('sumPosition').textContent = positionPay.toLocaleString() + ' ฿';
+            document.getElementById('sumSocial').textContent = `-${socialSec.toLocaleString()} ฿`;
+            document.getElementById('sumLife').textContent = `-${lifeIns} ฿`;
+            document.getElementById('sumLeave').textContent = `${lDays + hDays} วัน`;
+            document.getElementById('netPay').textContent = netPay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' บาท';
+            
+            // Update quarter bonus
+            updateQuarter(wDays, dailyBonus);
+        }
+
+        function updateQuarter(wDays, dailyBonus) {
+            const grid = document.getElementById('quarterGrid');
+            const [y, m] = document.getElementById('targetMonth').value.split('-').map(Number);
+            const q = Math.ceil(m / 3);
+            const qNames = ['ม.ค.-มี.ค.', 'เม.ย.-มิ.ย.', 'ก.ค.-ก.ย.', 'ต.ค.-ธ.ค.'];
+            
+            let html = '';
+            for (let i = 1; i <= 4; i++) {
+                const isCurrent = i === q;
+                const estDays = isCurrent ? wDays : 0;
+                const estBonus = estDays * dailyBonus;
+                
+                html += `
+                    <div class="q-card" style="${isCurrent ? 'border: 3px solid #1565c0; box-shadow: 0 4px 8px rgba(21,101,192,0.3);' : ''}">
+                        <label>${qNames[i-1]}</label>
+                        <div class="val">${isCurrent ? estBonus.toLocaleString() + ' ฿' : '-'}</div>
+                        <div class="days">${isCurrent ? estDays + ' วันทำงาน' : 'รอคำนวณ'}</div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        function updateCalendar() { 
+            createCalendar(); 
+        }
+        
+        function resetData() {
+            if (confirm('ต้องการล้างข้อมูลทั้งหมด?')) {
+                statusData.fill('');
+                createCalendar();
+            }
+        }
+
+        // Initialize
+        window.onload = createCalendar;
+    </script>
+</body>
+</html>
