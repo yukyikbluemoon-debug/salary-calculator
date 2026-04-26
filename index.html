@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบคำนวณค่าแรง รปภ. V.5</title>
+    <title>ระบบคำนวณค่าแรง รปภ. V.5 (Auto Date)</title>
     <style>
         :root {
             --primary: #1a237e;
@@ -528,11 +528,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>🛡️ ระบบคำนวณค่าแรง รปภ. <span class="version-badge">V.5</span></h1>
-        <div class="subtitle">คลิกที่วันเพื่อเลือกสถานะ | รองรับงวดครึ่งเดือนและเต็มเดือน</div>
+        <h1>🛡️ ระบบคำนวณค่าแรง รปภ. <span class="version-badge">V.5.1 (Auto Date)</span></h1>
+        <div class="subtitle">เปิดมาวันที่จะเป็นปัจจุบันอัตโนมัติ | คลิกเลือกสถานะ W/P/L/H/PH</div>
 
         <div class="info-box">
-            <strong>💡 วิธีใช้:</strong> คลิกที่วันเพื่อสลับสถานะ: ว่าง → ทำงาน(W) → ป่วย(P) → ลา(L) → หยุด(H) → นักขัตฤกษ์(PH) → ว่าง
+            <strong>💡 วิธีใช้:</strong> 1. เปิดมาวันที่จะเป็นปัจจุบัน 2. คลิกที่วันเพื่อเปลี่ยนสถานะ 3. ระบบคำนวณให้เลย
         </div>
 
         <!-- Rate Info -->
@@ -572,7 +572,8 @@
                 </div>
                 <div class="field">
                     <label>📆 เดือน/ปี ที่คำนวณ</label>
-                    <input type="month" id="targetMonth" value="2026-04" onchange="updateCalendar()">
+                    <!-- ลบ value="2026-04" ออกเพื่อให้ JavaScript ตั้งค่าเอง -->
+                    <input type="month" id="targetMonth" onchange="updateCalendar()">
                 </div>
                 <div class="field">
                     <label>💰 ค่าแรงพื้นฐาน 8 ชม. (บาท)</label>
@@ -1000,8 +1001,15 @@
             }
         }
 
-        // Initialize
-        window.onload = createCalendar;
+        // Initialize: Set Date to Today automatically
+        window.onload = function() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // JS months are 0-11, so +1
+            document.getElementById('targetMonth').value = `${year}-${month}`;
+            
+            createCalendar();
+        };
     </script>
 </body>
 </html>
