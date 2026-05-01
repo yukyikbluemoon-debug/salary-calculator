@@ -28,7 +28,7 @@
 3. ใช้งานได้ทันที!
 
 ### แบบที่ 2: ใช้งานบน GitHub Pages
-1. เข้าลิงก์: `https://yourusername.github.io/salary-calculator/`
+1. เข้าลิงก์: `https://yukyikbluemoon-debug.github.io/salary-calculator/`
 2. ใช้งานได้ทันทีผ่านอินเทอร์เน็ต
 
 ## 📱 รองรับการใช้งาน
